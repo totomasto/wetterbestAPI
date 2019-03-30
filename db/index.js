@@ -9,7 +9,7 @@ const pool = mysql.createPool({
 
 
 
-
+/// export pool mySQL
 module.exports = {
     pool : pool
 }
