@@ -35,12 +35,18 @@ app.get('/nav/leads/clients' , async (req, res)=>{ controller.displayCustomerLis
 // lista de return este cu selectie pe judet momentan , desi se trimit 2 parametrii -> judet + oras
 app.post('/nav/leads/clients/selection', async(req, res)=>{ controller.displayCustomerListWithSelection(req.body, (err, result)=>{ res.send(result); }) });
 
+//route pentru import de un singur client nav - folosit la lead-uri pentru top nav 
+// are un singur parametru -> client No 
+app.post('/nav/leads/clients/selection/single', async(req, res)=>{ controller.displayOneCustomer(req.body, (err, result)=>{ res.send(result); }) });
 
 // insert de lead-uri -> mai multe detalii in controller -> functia insertLeads
 app.post('/leads/insert', async(req, res)=>{ controller.insertLeads(req.body,(err, result)=>{if(result === 1) res.redirect('back');  })  });
 
 // selectie de lead-uri -> mai multe detalii in controller -> functia selectLeads
 app.get('/leads/select', async(req, res)=>{ controller.selectLeads((err, result)=>{ res.send(result); }) });
+
+//selectie de un singur lead -> mai multe detalii in controller -> function selectOneLead
+app.post('leads/select/single', async(req, res)=>{ controller.selectOneLead((req.body.id, (err, result)=>{ res.send(result); })) });
 
 
 

@@ -26,7 +26,9 @@ let displayClients = (callback) => {
 // se introduc in baza de date lead-urile, se folosesc in paginile de lead-uri
 // ----- API-ul pentru inserare din website din pagina de contact 
 let insertLeads = (data, callback) =>{
-    db.pool.query(`INSERT INTO leads (name, phone, region, city, source, status, client) VALUES ('${data.fullName}','${data.phone}','${data.region}','${data.city}','${data.source}','Neprocesat','-' )`, (err, result, fields)=>{
+    let timeStamp = new Date().toJSON().slice(0, 10);
+    db.pool.query(`INSERT INTO leads (name, email, phone, region, city, tip, source, status, client, obs, date) VALUES ('${data.fullName}','${data.email}','${data.phone}','${data.region}','${data.city}','${data.tip}','${data.source}','Neprocesat','-', 
+    '${data.obs}', '${timeStamp}' )`, (err, result, fields)=>{
         if(err) throw err;
         callback(null, 1);
         
@@ -36,7 +38,7 @@ let insertLeads = (data, callback) =>{
 
 // aduce toate datele din tabela de leaduri
 let selectLeads = (callback)=>{
-    db.pool.query(`SELECT * FROM leads`, (err, result, fields)=>{
+    db.pool.query(`SELECT * FROM leads ORDER BY status DESC`, (err, result, fields)=>{
         callback(null, result);
     });
 }
@@ -45,6 +47,13 @@ let selectLeads = (callback)=>{
 // update pentru tabela de leaduri 
 let updateLeads = (data,callback)=>{
     db.pool.query(`UPDATE leads SET status = 'In lucru' WHERE id = '${data.id}'`, (err, result, fields)=>{
+        callback(null, result);
+    });
+}
+
+// query pentru un singur lead 
+let selectOneLead = (id,callback)=>{
+    db.pool.query(`SELECT * FROM leads WHERE id = ${id}`, (err, result, fields)=>{
         callback(null, result);
     });
 }
@@ -100,7 +109,7 @@ let sendEmail = async (callback)=>{
 let displayCustomerList = async (callback)=>{
 
  //url-ul pentru selectie in NAV tabela de clienti
- const url = "http://192.168.1.6:5003/NAVWS/OData/Company('Test%202607')/CustomerList?$filter=Customer_Posting_Group eq '411_INT_PJ'"; 
+ const url = "http://192.168.1.6:5003/NAVWS/OData/Company('Test%202607')/CustomerList?$filter=Customer_Posting_Group eq '411_INT_PJ' and Blocked eq ' ' and  E_Mail ne '' and Salesperson_Code ne 'PANA' "; 
  //facem request cu datele de logare
  axios.get(url, {
      //credentials
@@ -127,8 +136,8 @@ let displayCustomerListWithSelection = async (data,callback)=>{
 
   if(data.city && data.region){
 
-    const url = `http://192.168.1.6:5003/NAVWS/OData/Company('Test%202607')/CustomerList?$filter=_x003C_Judet_x003E_ eq '${data.region}'&&Customer_Posting_Group eq '411_INT_PJ'
-    &&Blocked eq ''`; 
+    const url = `http://192.168.1.6:5003/NAVWS/OData/Company('Test%202607')/CustomerList?$filter=_x003C_Judet_x003E_ eq '${data.region}' and Customer_Posting_Group eq '411_INT_PJ'
+    and Blocked eq ' ' and E_Mail ne '' and Salesperson_Code ne 'PANA'`; 
 
     //facem request cu datele de logare
     axios.get(url, {
@@ -150,12 +159,45 @@ let displayCustomerListWithSelection = async (data,callback)=>{
     })
 
 
+ 
+   }
 
 }
 
 
 
-}
+
+let displayOneCustomer = async (data, callback) => {
+
+    if(data.No){
+
+        const url = `http://192.168.1.6:5003/NAVWS/OData/Company('Test%202607')/CustomerList?$filter=No eq '${data.No}'`; 
+    
+        //facem request cu datele de logare
+        axios.get(url, {
+            //credentials
+           withCredentials: true, 
+           auth : {
+               username : 'ws', 
+               password : 'Depaco123#'
+           }        
+        }).then((result)=>{
+            // console.log(`Status code : ${result.statusCode}`);
+            // log de resultate 
+           
+            callback(null, result.data.value);
+            
+        })
+        .catch((error)=>{
+            console.error(error);
+        })
+    
+    
+     
+       }
+
+
+} 
 
 
 
@@ -178,6 +220,8 @@ module.exports = {
     selectLeads,//select de lead-uri
     sendEmail,//email pentru lead-uri
     updateLeads,//update de lead-uri
+    selectOneLead, 
     displayCustomerList,
-    displayCustomerListWithSelection 
+    displayCustomerListWithSelection, 
+    displayOneCustomer 
 }
