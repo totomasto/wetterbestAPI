@@ -6,7 +6,7 @@ var soap  = require('soap'); // incercari pentru request soap din NAV
 let app = express(); 
 let cors = require('cors'); // CORS pentru eroarea din JS -> JS fetch() inainte de a face request cu functia dorita , face un OPTIONS request in care nu se aplica custom HEADERS
 const mailer = module.exports = require('express-mailer');
-let cons = require('consolidate');
+let cons = require('consolidate'); // dont know dont want to know needs to be deleted
 let port  = process.env.port || 8080; // port selection 
 
 
@@ -23,6 +23,8 @@ app.set('views', __dirname + '/views');
 // set the view engine to pug
 app.set('view engine', 'pug');
 
+
+// this is not ok TO DO : move the mail functions and initializer in another file 
 // Configure express-mail and setup default mail data.
 mailer.extend(app, {
     from: 'tomas.niculae@wetterbest.ro',
@@ -90,6 +92,7 @@ app.get('/leads/select/:id', async(req, res)=>{ controller.selectOneLead(req.par
 
 app.post('/leads/email', (req, res)=>{
 
+    // it works for now , not the best way :(
      // Setup email data.
   var mailOptions = {
     to: 'to.tomas@yahoo.com',
