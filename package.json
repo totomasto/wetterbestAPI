@@ -10,8 +10,10 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
+    "consolidate": "^0.15.1",
     "cors": "^2.8.5",
     "express": "^4.16.4",
+    "express-mailer": "^0.3.1",
     "httpntlm": "^1.7.6",
     "mysql": "^2.16.0",
     "nodemailer": "^6.0.0",
@@ -19,7 +21,9 @@
     "o.js": "^1.0.0",
     "odata": "^1.0.0",
     "odata-client": "^0.6.11",
+    "pug": "^2.0.3",
     "soap": "^0.26.0",
+    "swig": "^1.4.2",
     "xml2js": "^0.4.19"
   }
 }

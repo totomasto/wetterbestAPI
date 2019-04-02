@@ -5,8 +5,8 @@ const bodyParser = require('body-parser'); //body-parser --- keep in mind -> pen
 var soap  = require('soap'); // incercari pentru request soap din NAV 
 let app = express(); 
 let cors = require('cors'); // CORS pentru eroarea din JS -> JS fetch() inainte de a face request cu functia dorita , face un OPTIONS request in care nu se aplica custom HEADERS
-
-
+const mailer = module.exports = require('express-mailer');
+let cons = require('consolidate');
 let port  = process.env.port || 8080; // port selection 
 
 
@@ -16,6 +16,26 @@ app.use(cors());
 
 // listen la port 
 app.listen(port, function(){ console.log(`Running Wetterbest API on :  http://localhost:${port}/` ); }); 
+
+
+// set the view folder to views
+app.set('views', __dirname + '/views');
+// set the view engine to pug
+app.set('view engine', 'pug');
+
+// Configure express-mail and setup default mail data.
+mailer.extend(app, {
+    from: 'tomas.niculae@wetterbest.ro',
+    host: 'smtp.gmail.com', // hostname
+    secureConnection: true, // use SSL
+    port: 465, // port for secure SMTP
+    transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
+    auth: {
+    user: 'tomasniculae@gmail.com', // gmail id
+    pass: 'cacatpansat123' // gmail password
+    }
+  });
+
 
 
 
@@ -37,7 +57,7 @@ app.post('/nav/leads/clients/selection', async(req, res)=>{ controller.displayCu
 
 //route pentru import de un singur client nav - folosit la lead-uri pentru top nav 
 // are un singur parametru -> client No 
-app.post('/nav/leads/clients/selection/single', async(req, res)=>{ controller.displayOneCustomer(req.body, (err, result)=>{ res.send(result); }) });
+app.get('/nav/leads/clients/selection/:no', async(req, res)=>{ controller.displayOneCustomer(req.params.no, (err, result)=>{ res.send(result); }) });
 
 // insert de lead-uri -> mai multe detalii in controller -> functia insertLeads
 app.post('/leads/insert', async(req, res)=>{ controller.insertLeads(req.body,(err, result)=>{if(result === 1) res.redirect('back');  })  });
@@ -46,7 +66,7 @@ app.post('/leads/insert', async(req, res)=>{ controller.insertLeads(req.body,(er
 app.get('/leads/select', async(req, res)=>{ controller.selectLeads((err, result)=>{ res.send(result); }) });
 
 //selectie de un singur lead -> mai multe detalii in controller -> function selectOneLead
-app.post('leads/select/single', async(req, res)=>{ controller.selectOneLead((req.body.id, (err, result)=>{ res.send(result); })) });
+app.get('/leads/select/:id', async(req, res)=>{ controller.selectOneLead(req.params.id, (err, result)=>{ res.send(result); }) });
 
 
 
@@ -70,14 +90,38 @@ app.post('leads/select/single', async(req, res)=>{ controller.selectOneLead((req
 
 app.post('/leads/email', (req, res)=>{
 
-    // controller.sendEmail((err, result)=>{
+     // Setup email data.
+  var mailOptions = {
+    to: 'to.tomas@yahoo.com',
+    subject: 'Email from SMTP sever',
+    user: {  // data to view template, you can access as - user.name
+      name: 'Tomas',
+      message: 'Wetterbest leads'
+        
+    }
+    
+  }
+ 
+  // Send email.
+  app.mailer.send('email', mailOptions, function (err, message) {
+    if (err) {
+      console.log(err);
+     
+      
+    }
+    console.log(message);
+    res.send('Success');
+  });
+ 
+
+    // controller.sendEmail(req.body, (err, result)=>{
     //     res.send(result);
     // });
 
-    controller.updateLeads(req.body,(err, result)=>{
+    // controller.updateLeads(req.body,(err, result)=>{
 
-        if(result === 1) res.redirect('back');
-    });
+    //     if(result === 1) res.redirect('back');
+    // });
 
 });
 

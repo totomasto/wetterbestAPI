@@ -2,6 +2,14 @@ const db = require('./../db');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 
+const mailer = require('../index');
+
+
+
+
+
+
+
 ////////////////          functionalitate FORMULAR       ///////////////////////////////////////////
 // afisare clienti formular, nu se foloseste in niciun route * 
 let displayClients = (callback) => {
@@ -53,7 +61,7 @@ let updateLeads = (data,callback)=>{
 
 // query pentru un singur lead 
 let selectOneLead = (id,callback)=>{
-    db.pool.query(`SELECT * FROM leads WHERE id = ${id}`, (err, result, fields)=>{
+    db.pool.query(`SELECT * FROM leads WHERE id = '${id}'`, (err, result, fields)=>{
         callback(null, result);
     });
 }
@@ -62,39 +70,11 @@ let selectOneLead = (id,callback)=>{
 //functie pentru trimiterea de email catre client in momentul cand->
 // se alege un distribuitor pentru lead-ul selectat 
 // poate ar trebui mutata in util -- pentru helper functions ?
-let sendEmail = async (callback)=>{
+let sendEmail = async (data,callback)=>{
 
-  
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    host: 'smtp.mail.yahoo.com',
-    port: 465,
-    secure: true, // true for 465, false for other ports
-    auth: {
-      user: 'to.tomas@yahoo.com', // generated ethereal user
-      pass: 'Macboopro2012' // generated ethereal password
-    }
-  });
+   
 
-  // setup email data with unicode symbols
-  let mailOptions = {
-    
-    to: "tomas.niculae@wetterbest.ro", // list of receivers
-    subject: "Hello ✔", // Subject line
-    text: "Hello world?", // plain text body
-    html: "<b>Hello world?</b>" // html body
-  };
-
-  // send mail with defined transport object
-  let info = transporter.sendMail(mailOptions)
-
-  console.log("Message sent: %s", info.messageId);
- 
-
-  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-  // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-
-  callback(null, info.messageId);
+  callback(null, null);
 
 }
 
@@ -169,9 +149,9 @@ let displayCustomerListWithSelection = async (data,callback)=>{
 
 let displayOneCustomer = async (data, callback) => {
 
-    if(data.No){
+    if(data){
 
-        const url = `http://192.168.1.6:5003/NAVWS/OData/Company('Test%202607')/CustomerList?$filter=No eq '${data.No}'`; 
+        const url = `http://192.168.1.6:5003/NAVWS/OData/Company('Test%202607')/CustomerList?$filter=No eq '${data}'`; 
     
         //facem request cu datele de logare
         axios.get(url, {
