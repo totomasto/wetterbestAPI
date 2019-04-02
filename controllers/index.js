@@ -1,7 +1,7 @@
 const db = require('./../db');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
-
+const Nexmo = require('nexmo');
 const mailer = require('../index');
 
 
@@ -46,7 +46,7 @@ let insertLeads = (data, callback) =>{
 
 // aduce toate datele din tabela de leaduri
 let selectLeads = (callback)=>{
-    db.pool.query(`SELECT * FROM leads ORDER BY status DESC`, (err, result, fields)=>{
+    db.pool.query(`SELECT * FROM leads ORDER BY status `, (err, result, fields)=>{
         callback(null, result);
     });
 }
@@ -54,7 +54,7 @@ let selectLeads = (callback)=>{
 
 // update pentru tabela de leaduri 
 let updateLeads = (data,callback)=>{
-    db.pool.query(`UPDATE leads SET status = 'In lucru' WHERE id = '${data.id}'`, (err, result, fields)=>{
+    db.pool.query(`UPDATE leads SET status = 'In lucru', client='${data.client}' WHERE id = '${data.id}'`, (err, result, fields)=>{
         callback(null, result);
     });
 }
@@ -65,6 +65,28 @@ let selectOneLead = (id,callback)=>{
         callback(null, result);
     });
 }
+
+
+let sendSMS = (callback) => {
+
+    const nexmo = new Nexmo({
+        apiKey: '7830e32b',
+        apiSecret: 'GeNXH9XpVJ0sXCfn'
+      })
+      
+      const from = 'Wetterbest - Leads'
+      const to = '40730137527'
+      const text = 'Buna ziua, sunteti atribuit clientului cu numele : xxxxxx , veti fi contactat in curand'
+      
+      
+      
+      console.log(nexmo.message.sendSms(from, to, text));
+
+      callback(null, 'Success');
+
+
+}
+
 
 
 //functie pentru trimiterea de email catre client in momentul cand->
@@ -199,6 +221,7 @@ module.exports = {
     insertLeads,//insert de lead-uri
     selectLeads,//select de lead-uri
     sendEmail,//email pentru lead-uri
+    sendSMS,
     updateLeads,//update de lead-uri
     selectOneLead, 
     displayCustomerList,

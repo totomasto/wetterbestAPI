@@ -24,6 +24,9 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'pug');
 
 
+
+
+
 // this is not ok TO DO : move the mail functions and initializer in another file 
 // Configure express-mail and setup default mail data.
 mailer.extend(app, {
@@ -37,6 +40,10 @@ mailer.extend(app, {
     pass: 'cacatpansat123' // gmail password
     }
   });
+
+
+
+
 
 
 
@@ -70,7 +77,9 @@ app.get('/leads/select', async(req, res)=>{ controller.selectLeads((err, result)
 //selectie de un singur lead -> mai multe detalii in controller -> function selectOneLead
 app.get('/leads/select/:id', async(req, res)=>{ controller.selectOneLead(req.params.id, (err, result)=>{ res.send(result); }) });
 
+app.put('/leads/update/:id/:client', async(req,res)=>{ controller.updateLeads(req.params, (err, result)=>{ if(err){ throw err;} else { res.sendStatus(200); } })  })
 
+app.get('/leads/sms', async(req, res)=>{  controller.sendSMS((err, result)=>{ if(err) { console.log(err); } else { res.sendStatus(200);  }    })   })
 
 
 
@@ -92,13 +101,21 @@ app.get('/leads/select/:id', async(req, res)=>{ controller.selectOneLead(req.par
 
 app.post('/leads/email', (req, res)=>{
 
+
+
     // it works for now , not the best way :(
      // Setup email data.
   var mailOptions = {
     to: 'to.tomas@yahoo.com',
     subject: 'Email from SMTP sever',
     user: {  // data to view template, you can access as - user.name
-      name: 'Tomas',
+      name: req.body.lead.name,
+      email: req.body.lead.email,
+      phone: req.body.lead.phone,
+      region:req.body.lead.region,
+      city:req.body.lead.city,
+      tip:req.body.lead.tip,
+      obs: req.body.lead.obs,
       message: 'Wetterbest leads'
         
     }
@@ -107,13 +124,9 @@ app.post('/leads/email', (req, res)=>{
  
   // Send email.
   app.mailer.send('email', mailOptions, function (err, message) {
-    if (err) {
-      console.log(err);
-     
-      
-    }
-    console.log(message);
-    res.send('Success');
+    if (err) { console.log(err);  }
+    
+    res.sendStatus(200);
   });
  
 
