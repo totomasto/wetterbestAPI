@@ -84,6 +84,21 @@ app.put('/leads/update/:id/:client', async(req,res)=>{ controller.updateLeads(re
 app.get('/leads/sms/:client', async(req, res)=>{  controller.sendSMS(req.params,(err, result)=>{ if(err) { console.log(err); } else { res.sendStatus(200);  }    })   })
 
 
+app.get('/leads/clients/email', async(req, res)=>{ 
+
+let clients = controller.selectClientsForEmailing((err, result)=>{
+if(err) console.error(err);
+
+      result.forEach((element)=>{
+
+        console.log(element);
+
+      });
+
+   });
+
+});
+
 
 
 
@@ -127,7 +142,7 @@ app.post('/leads/email', (req, res)=>{
   // Send email.
   app.mailer.send('email', mailOptions, function (err, message) {
     if (err) { console.log(err);  }
-    
+    console.log(`${new Date()} : Lead operated, sending email to to.tomas@yahoo.com ... `);
     res.sendStatus(200);
   });
  

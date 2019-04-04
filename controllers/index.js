@@ -34,7 +34,8 @@ let displayClients = (callback) => {
 // se introduc in baza de date lead-urile, se folosesc in paginile de lead-uri
 // ----- API-ul pentru inserare din website din pagina de contact 
 let insertLeads = (data, callback) =>{
-    let timeStamp = new Date().toJSON().slice(0, 10);
+    // let timeStamp = new Date().toJSON().slice(0, 10);
+    let timeStamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
     db.pool.query(`INSERT INTO leads (name, email, phone, region, city, tip, source, status, client, obs, date, sent_date) VALUES ('${data.fullName}','${data.email}','${data.phone}','${data.region}','${data.city}','${data.tip}','${data.source}','Neprocesat','-', 
     '${data.obs}', '${timeStamp}', '${timeStamp}')`, (err, result, fields)=>{
         if(err) throw err;
@@ -54,7 +55,8 @@ let selectLeads = (callback)=>{
 
 // update pentru tabela de leaduri 
 let updateLeads = (data,callback)=>{
-    let date = new Date().toJSON().slice(0, 10);
+    // let date = new Date().toJSON().slice(0, 10);
+    let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
     db.pool.query(`UPDATE leads SET status = 'In lucru', client='${data.client}', sent_date='${date}' WHERE id = '${data.id}'`, (err, result, fields)=>{
         callback(null, result);
     });
@@ -65,6 +67,34 @@ let selectOneLead = (id,callback)=>{
     db.pool.query(`SELECT * FROM leads WHERE id = '${id}'`, (err, result, fields)=>{
         callback(null, result);
     });
+}
+
+let selectClientsForEmailing =  (callback) =>{
+
+    db.pool.query(`SELECT * FROM leads WHERE status = 'In lucru'`,(err, result, fields)=>{
+        // remember to change status from neprocesat to in lucru 
+        let clientsName = []; 
+            result.forEach((element)=>{
+                //remember to change the date to the current date
+                // not in the future
+                // this is only for presentation 
+                let date = new Date(new Date().getTime() + (3 * 86400000));
+                let leadDate = new Date(element.sent_date);
+                
+
+                let diffDays = parseInt((date - leadDate) / (1000 * 60 * 60 * 24)); 
+                if(diffDays >= 3){
+
+                    clientsName.push(element.client);
+                   
+                }
+            });
+
+           
+            callback(null, clientsName);
+    });
+
+
 }
 
 
@@ -225,6 +255,7 @@ module.exports = {
     sendSMS,
     updateLeads,//update de lead-uri
     selectOneLead, 
+    selectClientsForEmailing,
     displayCustomerList,
     displayCustomerListWithSelection, 
     displayOneCustomer 
