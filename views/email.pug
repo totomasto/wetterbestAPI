@@ -1,16 +1,27 @@
+html
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='description', content='Some description')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
 
-doctype html
-head
-body
-  div
-   p
-    b Hi #{user.name}
-  div
-    p #{user.message}
-    p #{user.email}
-    p #{user.phone}
-    p #{user.region}
-    p #{user.city}
-    p #{user.tip}
-    p #{user.obs}
-    
+
+
+img(src=("https://www.wetterbest.ro/wp-content/themes/wtb-child/img/logo.png"))
+
+h2 Ati primit un lead, aveti mai jos datele de contact : 
+
+p Nume : #{user.name}
+p Email : #{user.email} 
+p Telefon : #{user.phone}
+p Judet : #{user.region}
+p Oras : #{user.city}
+p Tip : #{user.tip}
+p Observatii : #{user.obs}
+
+
+p Va rugam sa folositi datele de mai sus pentru a realiza oferta 
+
+h2 Multumim, 
+p Echipa Wetterbest.
+

@@ -35,8 +35,8 @@ let displayClients = (callback) => {
 // ----- API-ul pentru inserare din website din pagina de contact 
 let insertLeads = (data, callback) =>{
     let timeStamp = new Date().toJSON().slice(0, 10);
-    db.pool.query(`INSERT INTO leads (name, email, phone, region, city, tip, source, status, client, obs, date) VALUES ('${data.fullName}','${data.email}','${data.phone}','${data.region}','${data.city}','${data.tip}','${data.source}','Neprocesat','-', 
-    '${data.obs}', '${timeStamp}' )`, (err, result, fields)=>{
+    db.pool.query(`INSERT INTO leads (name, email, phone, region, city, tip, source, status, client, obs, date, sent_date) VALUES ('${data.fullName}','${data.email}','${data.phone}','${data.region}','${data.city}','${data.tip}','${data.source}','Neprocesat','-', 
+    '${data.obs}', '${timeStamp}', '${timeStamp}')`, (err, result, fields)=>{
         if(err) throw err;
         callback(null, 1);
         
@@ -54,7 +54,8 @@ let selectLeads = (callback)=>{
 
 // update pentru tabela de leaduri 
 let updateLeads = (data,callback)=>{
-    db.pool.query(`UPDATE leads SET status = 'In lucru', client='${data.client}' WHERE id = '${data.id}'`, (err, result, fields)=>{
+    let date = new Date().toJSON().slice(0, 10);
+    db.pool.query(`UPDATE leads SET status = 'In lucru', client='${data.client}', sent_date='${date}' WHERE id = '${data.id}'`, (err, result, fields)=>{
         callback(null, result);
     });
 }
@@ -67,7 +68,7 @@ let selectOneLead = (id,callback)=>{
 }
 
 
-let sendSMS = (callback) => {
+let sendSMS = (data,callback) => {
 
     const nexmo = new Nexmo({
         apiKey: '7830e32b',
@@ -76,11 +77,11 @@ let sendSMS = (callback) => {
       
       const from = 'Wetterbest - Leads'
       const to = '40730137527'
-      const text = 'Buna ziua, sunteti atribuit clientului cu numele : xxxxxx , veti fi contactat in curand'
+      const text = `Buna ziua, sunteti atribuit clientului cu numele : ${data.client} , veti fi contactat in curand`
       
       
       
-      console.log(nexmo.message.sendSms(from, to, text));
+      nexmo.message.sendSms(from, to, text);
 
       callback(null, 'Success');
 

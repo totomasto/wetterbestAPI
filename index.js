@@ -17,7 +17,9 @@ app.use(cors());
 // listen la port 
 app.listen(port, function(){ console.log(`Running Wetterbest API on :  http://localhost:${port}/` ); }); 
 
-
+// set the engine to html
+// app.engine('html', cons.swig)
+// dont need this , we re using pug 
 // set the view folder to views
 app.set('views', __dirname + '/views');
 // set the view engine to pug
@@ -69,7 +71,7 @@ app.post('/nav/leads/clients/selection', async(req, res)=>{ controller.displayCu
 app.get('/nav/leads/clients/selection/:no', async(req, res)=>{ controller.displayOneCustomer(req.params.no, (err, result)=>{ res.send(result); }) });
 
 // insert de lead-uri -> mai multe detalii in controller -> functia insertLeads
-app.post('/leads/insert', async(req, res)=>{ controller.insertLeads(req.body,(err, result)=>{if(result === 1) res.redirect('back');  })  });
+app.post('/leads/insert', async(req, res)=>{ controller.insertLeads(req.body.body,(err, result)=>{if(result === 1) res.redirect('back');  })  });
 
 // selectie de lead-uri -> mai multe detalii in controller -> functia selectLeads
 app.get('/leads/select', async(req, res)=>{ controller.selectLeads((err, result)=>{ res.send(result); }) });
@@ -79,7 +81,7 @@ app.get('/leads/select/:id', async(req, res)=>{ controller.selectOneLead(req.par
 
 app.put('/leads/update/:id/:client', async(req,res)=>{ controller.updateLeads(req.params, (err, result)=>{ if(err){ throw err;} else { res.sendStatus(200); } })  })
 
-app.get('/leads/sms', async(req, res)=>{  controller.sendSMS((err, result)=>{ if(err) { console.log(err); } else { res.sendStatus(200);  }    })   })
+app.get('/leads/sms/:client', async(req, res)=>{  controller.sendSMS(req.params,(err, result)=>{ if(err) { console.log(err); } else { res.sendStatus(200);  }    })   })
 
 
 
@@ -107,7 +109,7 @@ app.post('/leads/email', (req, res)=>{
      // Setup email data.
   var mailOptions = {
     to: 'to.tomas@yahoo.com',
-    subject: 'Email from SMTP sever',
+    subject: `Wetterbest lead : ${req.body.lead.name}`,
     user: {  // data to view template, you can access as - user.name
       name: req.body.lead.name,
       email: req.body.lead.email,
@@ -130,14 +132,7 @@ app.post('/leads/email', (req, res)=>{
   });
  
 
-    // controller.sendEmail(req.body, (err, result)=>{
-    //     res.send(result);
-    // });
-
-    // controller.updateLeads(req.body,(err, result)=>{
-
-    //     if(result === 1) res.redirect('back');
-    // });
+  
 
 });
 
