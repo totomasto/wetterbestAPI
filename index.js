@@ -29,7 +29,7 @@ app.set('view engine', 'pug');
 
 
 
-// this is not ok TO DO : move the mail functions and initializer in another file 
+// this is not ok !  TO DO : move the mail functions and initializer in another file 
 // Configure express-mail and setup default mail data.
 mailer.extend(app, {
     from: 'tomas.niculae@wetterbest.ro',
@@ -79,9 +79,11 @@ app.get('/leads/select', async(req, res)=>{ controller.selectLeads((err, result)
 //selectie de un singur lead -> mai multe detalii in controller -> function selectOneLead
 app.get('/leads/select/:id', async(req, res)=>{ controller.selectOneLead(req.params.id, (err, result)=>{ res.send(result); }) });
 
-app.put('/leads/update/:id/:client', async(req,res)=>{ controller.updateLeads(req.params, (err, result)=>{ if(err){ throw err;} else { res.sendStatus(200); } })  })
+app.put('/leads/update/:id/:client', async(req,res)=>{ controller.updateLeads(req.params, (err, result)=>{ if(err){ console.log(err);} else { res.sendStatus(200); } })  });
 
-app.get('/leads/sms/:client', async(req, res)=>{  controller.sendSMS(req.params,(err, result)=>{ if(err) { console.log(err); } else { res.sendStatus(200);  }    })   })
+app.get('/leads/sms/:client', async(req, res)=>{  controller.sendSMS(req.params,(err, result)=>{ if(err) { console.log(err); } else { res.sendStatus(200);  }    })   });
+
+app.get('/leads/update/success/:name', async(req, res)=>{ controller.changeLeadStatus(req.params,(err, result)=>{ if(err) { console.log(err); } else { res.sendStatus(200);  } }) });
 
 
 app.get('/leads/clients/email', async(req, res)=>{ 
@@ -114,8 +116,6 @@ if(err) console.error(err);
 
 
 
-
-
 app.post('/leads/email', (req, res)=>{
 
 
@@ -123,7 +123,7 @@ app.post('/leads/email', (req, res)=>{
     // it works for now , not the best way :(
      // Setup email data.
   var mailOptions = {
-    to: 'to.tomas@yahoo.com',
+    to: 'tomas.niculae@wetterbest.ro',
     subject: `Wetterbest lead : ${req.body.lead.name}`,
     user: {  // data to view template, you can access as - user.name
       name: req.body.lead.name,
@@ -142,7 +142,7 @@ app.post('/leads/email', (req, res)=>{
   // Send email.
   app.mailer.send('email', mailOptions, function (err, message) {
     if (err) { console.log(err);  }
-    console.log(`${new Date()} : Lead operated, sending email to to.tomas@yahoo.com ... `);
+    console.log(`${new Date()} : Lead operated, sending email to tomas.niculae@wetterbest.ro ... `);
     res.sendStatus(200);
   });
  
@@ -200,6 +200,62 @@ app.get('/nav/formular/import', async(req, res)=>{
 
 
 
+////////////////////ROUA //////////////////
+
+app.post('/roua/email', async(req, res)=>{
+
+console.log(req.body.body);
+let info = req.body.body;
+
+var mailOptions = {
+  to: 'to.tomas@yahoo.com', 
+  subject: `Roua - programare : ${info.first_name}`,
+  user: {  // data to view template, you can access as - user.name
+    name: `${info.first_name} ${info.last_name}`,
+    phone: info.phone,
+    doctor:info.doctor,
+    investigatie:info.subdomain,
+    message : info.message,
+      
+  }
+  
+}
+
+// Send email.
+app.mailer.send('roua', mailOptions, function (err, message) {
+  if (err) { console.log(err);  }
+  console.log(`${new Date()} : Programare ROUA, sending email to to.tomas@yahoo.com ... `);
+  res.sendStatus(200);
+});
 
 
+});
 
+////////////////////ROUA //////////////////
+
+app.post('/roua/contact', async(req, res)=>{
+
+  console.log(req.body.body);
+  let info = req.body.body;
+  
+  var mailOptions = {
+    to: 'to.tomas@yahoo.com', 
+    subject: `Roua - contact : ${info.name}`,
+    user: {  // data to view template, you can access as - user.name
+      name: info.name,
+      email: info.email,
+      message : info.message,
+        
+    }
+    
+  }
+  
+  // Send email.
+  app.mailer.send('rouaContact', mailOptions, function (err, message) {
+    if (err) { console.log(err);  }
+    console.log(`${new Date()} : Contact ROUA, sending email to to.tomas@yahoo.com ... `);
+    res.sendStatus(200);
+  });
+  
+  
+  });

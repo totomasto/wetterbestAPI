@@ -22,6 +22,20 @@ p Observatii : #{user.obs}
 
 p Va rugam sa folositi datele de mai sus pentru a realiza oferta 
 
+
+h3 Daca ati solutionat oferta de mai sus va rugam folositi butoanele de mai jos pentru a ne transmite status-ul lead-ului : 
+
+p
+  a(href="http://formular.wetterbest.ro:80/leads/insert/status/success/"+user.name) 
+     button(type="button") Lead solutionat cu succes
+
+p
+  a(href="http://formular.wetterbest.ro:80/leads/insert/status/fail/"+user.name)
+     button(type="button") Lead pierdut
+p
+  a(href="http://formular.wetterbest.ro:80/leads/insert/status/wait/"+user.name) 
+     button(type="button") Lead in asteptare
+
 h2 Multumim, 
 p Echipa Wetterbest.
 

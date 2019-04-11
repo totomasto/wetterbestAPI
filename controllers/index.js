@@ -35,10 +35,12 @@ let displayClients = (callback) => {
 // ----- API-ul pentru inserare din website din pagina de contact 
 let insertLeads = (data, callback) =>{
     // let timeStamp = new Date().toJSON().slice(0, 10);
+    console.log('Data was received...');
     let timeStamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
     db.pool.query(`INSERT INTO leads (name, email, phone, region, city, tip, source, status, client, obs, date, sent_date) VALUES ('${data.fullName}','${data.email}','${data.phone}','${data.region}','${data.city}','${data.tip}','${data.source}','Neprocesat','-', 
     '${data.obs}', '${timeStamp}', '${timeStamp}')`, (err, result, fields)=>{
         if(err) throw err;
+        console.log('Data has been inserted succesfully...');
         callback(null, 1);
         
     });
@@ -57,10 +59,29 @@ let selectLeads = (callback)=>{
 let updateLeads = (data,callback)=>{
     // let date = new Date().toJSON().slice(0, 10);
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    // console.log('Updating... ');
     db.pool.query(`UPDATE leads SET status = 'In lucru', client='${data.client}', sent_date='${date}' WHERE id = '${data.id}'`, (err, result, fields)=>{
-        callback(null, result);
+        if(err) console.log(err);
+        callback(null, 'Success');
     });
 }
+
+
+let changeLeadStatus = (data, callback)=>{
+
+   // let date = new Date().toJSON().slice(0, 10);
+   let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+   db.pool.query(`UPDATE leads SET status = 'Finalizat', sent_date = '${date}' WHERE name = '${data.name}'`, (err, result, fields) =>{
+
+    if(err) console.log(err);
+    callback(null, 'Success');
+
+   });
+
+}
+
+
 
 // query pentru un singur lead 
 let selectOneLead = (id,callback)=>{
@@ -106,13 +127,14 @@ let sendSMS = (data,callback) => {
       })
       
       const from = 'Wetterbest - Leads'
-      const to = '40730137527'
+      const to = '40730137527';
       const text = `Buna ziua, sunteti atribuit clientului cu numele : ${data.client} , veti fi contactat in curand`
+      console.log('Sending sms');
       
-      
-      
-      nexmo.message.sendSms(from, to, text);
 
+      to.forEach((element)=>{
+      nexmo.message.sendSms(from, element, text);
+    });
       callback(null, 'Success');
 
 
@@ -254,6 +276,7 @@ module.exports = {
     sendEmail,//email pentru lead-uri
     sendSMS,
     updateLeads,//update de lead-uri
+    changeLeadStatus,
     selectOneLead, 
     selectClientsForEmailing,
     displayCustomerList,
