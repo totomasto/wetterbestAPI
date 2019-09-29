@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express'); //express
 const controller = require('./controllers'); //controller pentru functionalitati
 const reportController = require('./controllers/leadsReports');
@@ -10,8 +11,9 @@ let app = express();
 let cors = require('cors'); // CORS pentru eroarea din JS -> JS fetch() inainte de a face request cu functia dorita , face un OPTIONS request in care nu se aplica custom HEADERS
 const mailer = module.exports = require('express-mailer');
 let cons = require('consolidate'); // dont know dont want to know needs to be deleted
-let port  = process.env.PORT || 8081; // port selection 
+let port  = process.env.PORT; // port selection 
 
+console.log(process.env.USERNAME);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
@@ -43,14 +45,14 @@ app.set('view engine', 'pug');
 //this is not ok !  TO DO : move the mail functions and initializer in another file 
 //Configure express-mail and setup default mail data.
 mailer.extend(app, {
-    from: process.env.MAIL_USER,
-    host: process.env.MAIL_SERVER, // hostname
+    from: 'portal@wetterbest.ro',
+    host: 'mail.wetterbest.ro', // hostname
     secureConnection: true, // use SSL
     port: 465, // port for secure SMTP
     transportMethod: 'SMTP', // default is SMTP. Accepts anything that nodemailer accepts
     auth: {
-    user: process.env.MAIL_USER, // gmail id
-    pass: process.env.MAIL_PASS // gmail password
+    user: 'portal@wetterbest.ro', // gmail id
+    pass: '[eRuB24#1]' // gmail password
     }
   });
 
@@ -77,6 +79,14 @@ app.get('/wtb/reseller/check/:cif', (req, res)=>{ controller.checkIfResellerExis
 
           res.send(result);
   });  
+});
+
+app.get('/wtb/leads/select/:email', (req, res)=>{
+  console.log('Req was received');
+  controller.getLeadsByEmail(req.params.email, (err, result)=>{
+    if(err) console.log(err);  
+    res.send(result);
+  });
 });
 
 app.get('/wtb/reseller/link/:email', (req, res)=>{  

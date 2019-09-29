@@ -10,6 +10,20 @@ const mailer = require('../index');
 ///////////////////////////////////////////////////////// WETTERBEST APP /////////////////////////////////////////////
 
 
+const getLeadsByEmail = async (email, callback)=>{
+   
+    let query = `SELECT * FROM clients_leads WHERE E_Mail LIKE '${email}%' LIMIT 1`;
+    
+    db.pool.query(query, async (err, result, fields)=>{
+        let name = result[0].Name;
+        let leads = `SELECT * FROM leads WHERE client = '${name}'`;
+        db.pool.query(leads, async(err, result, fields)=>{
+            callback(err, result);
+        })    
+    })
+
+}
+
 
 let checkIfResellerExistsAndReturnEmail = async (cif,callback)=>{
 
@@ -519,6 +533,7 @@ let displayOneCustomer = async (data, callback) => {
 
 // export de functii pentru index.js 
 module.exports = {
+    getLeadsByEmail,
     checkIfResellerExistsAndReturnEmail,
     backupDatabase,
     displayClients, //selecteaza toti clientii din formular - no use for the moment
