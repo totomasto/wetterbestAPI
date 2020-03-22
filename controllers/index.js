@@ -9,13 +9,32 @@ const mailer = require('../index');
 
 ///////////////////////////////////////////////////////// WETTERBEST APP /////////////////////////////////////////////
 
+const importFormProducts = async (callback)=>{
+    let query = `SELECT * FROM produse_formular_wtb`;
+
+    db.pool.query(query, async (err, result, fields)=> {
+        callback(null, result);
+    });
+}
+
+const importProductDimensions = async (callback)=>{
+    let query = `SELECT * FROM sub_category`;
+
+    db.pool.query(query, async (err, result, fields)=> {
+        callback(null, result);
+    });
+}
+
+
 
 const getLeadsByEmail = async (email, callback)=>{
    
-    let query = `SELECT * FROM clients_leads WHERE E_Mail LIKE '${email}%' LIMIT 1`;
-    
+    let query = `SELECT * FROM clients_leads WHERE E_Mail LIKE '%${email}%' LIMIT 1`;
+
     db.pool.query(query, async (err, result, fields)=>{
         let name = result[0].Name;
+        console.log(err);
+        // console.log(result);
         let leads = `SELECT * FROM leads WHERE client = '${name}'`;
         db.pool.query(leads, async(err, result, fields)=>{
             callback(err, result);
@@ -116,7 +135,7 @@ let query = `SELECT * from wtb_postmeta WHERE post_id =  '${lastID}' `;
 
     db.poolWP.query(query, async (err, result, fields)=>{
         if(err) console.log(err);
-
+          if(result[0]){
        let lead = {wpID: result[0].post_id, source : 'Website', tip : 'Material+Montaj'};
         // console.log(result);
         result.forEach((element)=>{
@@ -136,6 +155,7 @@ let query = `SELECT * from wtb_postmeta WHERE post_id =  '${lastID}' `;
             // console.log(lead);
         callback(null, lead);
         }
+    }
     })
 }
 
@@ -195,7 +215,7 @@ let insertLeads = (data, callback) =>{
         let wpID = (data.wpID) ? data.wpID : 0;
     
         
-    
+    data.obs = data.obs.replace(/['"]+/g, '');
 
     db.pool.query('INSERT INTO leads (name, email, phone, region, city, tip, source, status, client ,obs, sent_date, reason,wp_id) VALUES ("'+data.fullName+'","'+data.email+'","'+data.phone+'","'+data.region+'","'+data.city+'","'+data.tip+'","'+data.source+'","Neprocesat", "-" , "'+data.obs+'" , "'+timeStamp+'" ,"-", "'+ wpID +'")', (err, result, fields)=>{
     
@@ -435,26 +455,26 @@ let sendEmail = async (data,callback)=>{
 
 let displayCustomerList = async (callback)=>{
 
-//  //url-ul pentru selectie in NAV tabela de clienti
- const url = process.env.NAV_URL_AGENT; 
- //facem request cu datele de logare
- axios.get(url, {
-     //credentials
-    withCredentials: true, 
-    auth : {
-        username : process.env.NAV_USER, 
-        password : process.env.NAV_PASS
-    }        
- }).then((result)=>{
-     // console.log(`Status code : ${result.statusCode}`);
-     // log de resultate 
+// //  //url-ul pentru selectie in NAV tabela de clienti
+//  const url = process.env.NAV_URL_AGENT; 
+//  //facem request cu datele de logare
+//  axios.get(url, {
+//      //credentials
+//     withCredentials: true, 
+//     auth : {
+//         username : process.env.NAV_USER, 
+//         password : process.env.NAV_PASS
+//     }        
+//  }).then((result)=>{
+//      // console.log(`Status code : ${result.statusCode}`);
+//      // log de resultate 
     
-     callback(null, result.data.value);
+//      callback(null, result.data.value);
      
- })
- .catch((error)=>{
-     console.error(error);
- })
+//  })
+//  .catch((error)=>{
+//      console.error(error);
+//  })
 
 
     db.pool.query('SELECT * FROM clients_leads', (err, result, fields)=>{
@@ -533,6 +553,8 @@ let displayOneCustomer = async (data, callback) => {
 
 // export de functii pentru index.js 
 module.exports = {
+    importFormProducts,
+    importProductDimensions, 
     getLeadsByEmail,
     checkIfResellerExistsAndReturnEmail,
     backupDatabase,

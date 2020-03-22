@@ -75,6 +75,30 @@ app.get('/status', (req,res)=>{res.sendStatus(200)});
 ///////////////////////////////////////////////////////////////////////////// WETTERBEST APP ////////////////////////////////////////////////////////////////
 
 
+app.get('/wtb/import/products', (req, res)=>{ controller.importFormProducts((err, result)=>{
+              res.send(result);
+    }); 
+});
+
+
+app.get('/wtb/import/dimensions', (req,res)=>{ controller.importProductDimensions((err, result)=>{
+                  res.send(result);
+    }); 
+});
+
+
+
+
+
+
+
+///////////////////////////////////////////////
+
+
+
+
+
+
 app.get('/wtb/reseller/check/:cif', (req, res)=>{ controller.checkIfResellerExistsAndReturnEmail(req.params.cif, (err, result)=>{
 
           res.send(result);
@@ -94,10 +118,11 @@ app.get('/wtb/reseller/link/:email', (req, res)=>{
 
 
   let cryptedEmailAddress = req.params.email;
-  let generatedLink = `http://localhost:8080/register/${cryptedEmailAddress}`;
+  let generatedLink = `https://wetterbest-5b774.firebaseapp.com/register/${cryptedEmailAddress}`;
 
   var mailOptions = {
-    to: 'to.tomas@yahoo.com', 
+    to: cryptedEmailAddress.toLowerCase(),
+    cc: 'tomas.niculae@wetterbest.ro',
     subject: `Wetterbest-Leads : Link inregistrare`,
     user: {  // data to view template, you can access as - user.name
        generatedLink :  generatedLink
@@ -197,7 +222,9 @@ controller.compareDatabasesForLeads((err, result)=>{
 
 // route pentru import de clienti din nav - folosit la sistemul de leaduri pentru persoana care opereaza leadurile 
 // si le transmite catre distribuitori 
-app.get('/nav/leads/clients' , async (req, res)=>{ controller.displayCustomerList((err, result)=>{ res.send(result); }) });
+app.get('/nav/leads/clients' , async (req, res)=>{ 
+  controller.displayCustomerList((err, result)=>{ res.send(result); }) 
+});
 
 
 // route pentru import clienti din nav - folosit la lead-uri ca si mai sus 
@@ -212,7 +239,35 @@ app.get('/nav/leads/clients/selection/:no', async(req, res)=>{ controller.displa
 app.post('/leads/insert', async(req, res)=>{ controller.insertLeads(req.body.body,(err, result)=>{if(result === 1) res.redirect('back');  })  });
 
 // selectie de lead-uri -> mai multe detalii in controller -> functia selectLeads
-app.get('/leads/select', async(req, res)=>{ controller.selectLeads((err, result)=>{ res.send(result); }) });
+app.get('/leads/select', async(req, res)=>{ 
+  
+  console.log('Touching...')
+    controller.compareDatabasesForLeads((err, result)=>{
+      if(err) console.log(err);
+
+    result.forEach((element)=>{
+      console.log(element);
+      controller.getLastLead(element, (err, result)=>{
+          if(err) console.log(err);
+          if(result){  
+          
+          controller.insertLeads(result, (err,result)=>{
+              if(err) console.log(err);
+                // console.log(result);
+                
+
+           });
+        }
+      });
+
+    });
+
+    
+
+  });
+
+  
+  controller.selectLeads((err, result)=>{ res.send(result); }) });
 
 // sterge lead
 app.get('/leads/delete/:id', async (req, res)=>{ controller.deleteLead(req.params.id, (err, result)=>{
@@ -256,15 +311,10 @@ if(err) console.error(err);
 
 app.post('/leads/email', (req, res)=>{
 
-// console.log(req.body.clientEmail.toLowerCase());
 
-//RAZVAN RIZEA CC PENTRU JUDETELE LUI SE PRESCRIE IN DB IN FIECARE JUDET  
-
-    // it works for now , not the best way :(
-     // Setup email data.
   var mailOptions = {
     to: req.body.clientEmail.toLowerCase(),
-    cc: `${req.body.agentEmail.toLowerCase()};sabina.ionita@wetterbest.ro;tomas.niculae@wetterbest.ro;denisa.fenic@wetterbest.ro`,
+    cc: `${req.body.agentEmail.toLowerCase()};sabina.ionita@wetterbest.ro;tomas.niculae@wetterbest.ro;georgiana.zaharia@wetterbest.ro`,
     subject: `Wetterbest lead : ${req.body.lead.name}`,
     user: {  // data to view template, you can access as - user.name
       name: req.body.lead.name,
@@ -283,25 +333,27 @@ app.post('/leads/email', (req, res)=>{
   // Send email.
   app.mailer.send('email', mailOptions, function (err, message) {
     if (err) { console.log(err);  }
-    console.log(`${new Date()} : Lead operated, sending email to ${req.body.clientEmail.toLowerCase()} ... `);
-    res.sendStatus(200);
+    console.log(`${new Date()} : Lead operated, sending email to ... `);
+    controller.updateLeads({'client' : req.body.clientName, 'id' : req.body.lead.id}, (err, result)=>{ if(err){ console.log(err);} else { res.sendStatus(200); };
+    // res.sendStatus(200);
   });
 
 
 });
 
-
+});
 
 app.post('/leads/email/remind', (req, res)=>{
 
-  if(req.body.clientEmail){
+  if(req.body.agentEmail){
 
 //  console.log(req.body.lead);
       // it works for now , not the best way :(
        // Setup email data.
     var mailOptions = {
-      to: req.body.clientEmail.toLowerCase(),
+      to: req.body.agentEmail.toLowerCase(),
       cc: `${req.body.agentEmail.toLowerCase()};sabina.ionita@wetterbest.ro;tomas.niculae@wetterbest.ro`,
+      // to: 'tomas.niculae@wetterbest.ro;raymund.vizauer@teraplast.ro',
       subject: `Wetterbest lead - REMINDER : ${req.body.lead.name}`,
       user: {  // data to view template, you can access as - user.name
         name: req.body.lead.name,
@@ -324,7 +376,6 @@ app.post('/leads/email/remind', (req, res)=>{
       console.log(`${new Date()} : Lead operated, sending email to ${req.body.clientEmail.toLowerCase()} ... `);
       res.sendStatus(200);
     });
-  
   } else {
     res.sendStatus(201);
   }
@@ -332,6 +383,41 @@ app.post('/leads/email/remind', (req, res)=>{
 
 
 
+
+  app.post('/leads/email/remind/operator', (req, res)=>{
+
+    if(req.body.agentEmail){
+  
+      var mailOptions = {
+       
+        to: 'georgiana.zaharia@wetterbest.ro',
+        cc: 'tomas.niculae@wetterbest.ro',
+        subject: `Wetterbest lead - OPERATOR : ${req.body.lead.name}`,
+        user: {  // data to view template, you can access as - user.name
+          name: req.body.lead.name,
+          sent_date : req.body.lead.sent_date,
+          email: req.body.lead.email,
+          phone: req.body.lead.phone,
+          region:req.body.lead.region,
+          city:req.body.lead.city,
+          tip:req.body.lead.tip,
+          obs: req.body.lead.obs,
+          message: 'Wetterbest leads'
+            
+        }
+        
+      }
+     
+      // Send email.
+      app.mailer.send('remind_email_operator', mailOptions, function (err, message) {
+        if (err) { console.log(err);  }
+        console.log(`${new Date()} : Lead operated, sending email ... `);
+        res.sendStatus(200);
+      });
+    } else {
+      res.sendStatus(201);
+    }
+    });
 
 
 
